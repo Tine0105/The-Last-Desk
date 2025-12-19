@@ -70,12 +70,25 @@ module last_desk::boss_nft {
 
 
     public entry fun init_display(pub: &Publisher, ctx: &mut TxContext){
+         // Legacy initializer kept for compatibility; it registers generic placeholders.
          let mut disp = display::new<BossNFT>(pub, ctx);
 
-        display::add(&mut disp, string::utf8(b"name"), string::utf8(b"{name}"));
-        display::add(&mut disp, string::utf8(b"image_url"), string::utf8(b"{image_url}"));
-        display::add(&mut disp, string::utf8(b"description"), string::utf8(b"{description}"));
+        display::add(&mut disp, string::utf8(b"name"), string::utf8(b"Unknown Boss"));
+        display::add(&mut disp, string::utf8(b"image_url"), string::utf8(b""));
+        display::add(&mut disp, string::utf8(b"description"), string::utf8(b""));
         // consume the Display value so it isn't left unused (Display lacks `drop`)
+        transfer::public_transfer(disp, tx_context::sender(ctx));
+    }
+
+    // Better: initialize display metadata for a specific stage using real metadata
+    public entry fun init_display_for_stage(pub: &Publisher, stage: u64, ctx: &mut TxContext) {
+        let (boss_name, image_url) = get_boss_metadata(stage);
+
+        let mut disp = display::new<BossNFT>(pub, ctx);
+        display::add(&mut disp, string::utf8(b"name"), boss_name);
+        display::add(&mut disp, string::utf8(b"image_url"), image_url);
+        display::add(&mut disp, string::utf8(b"description"), string::utf8(b"Reward for defeating the stage boss."));
+
         transfer::public_transfer(disp, tx_context::sender(ctx));
     }
 

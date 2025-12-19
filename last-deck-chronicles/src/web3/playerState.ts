@@ -1,62 +1,71 @@
-import { TransactionBlock } from '@mysten/sui'
-import { suiClient } from './suiClient'
+import { Transaction } from "@mysten/sui/transactions";
+import { suiClient } from "./suiClient";
+import type {
+  SuiTransactionBlockResponse,
+  SuiObjectChange,
+  SuiObjectResponse,
+} from "@mysten/sui/client";
 
-type TransactionBlockInstance = InstanceType<typeof TransactionBlock>
+/* ================== CONFIG ================== */
 
-// TODO: set PACKAGE_ID after publishing the Move package (replace 0x...)
-export const PACKAGE_ID = '0x9b4f72b690a7829e2febb7ffb00e2f588a25351f13da14bf7a78c21a9be0c48e'
+export const PACKAGE_ID =
+  "0x9b4f72b690a7829e2febb7ffb00e2f588a25351f13da14bf7a78c21a9be0c48e";
 
 type Wallet = {
-  signAndExecuteTransactionBlock: (opts: { transactionBlock: TransactionBlockInstance }) => Promise<unknown>
-}
+  signAndExecuteTransaction: (opts: {
+    transaction: Transaction;
+  }) => Promise<SuiTransactionBlockResponse>;
+};
 
-/** LOAD SAVE GAME: find PlayerState objects owned by `address` */
-export async function loadPlayer(address: string) {
-  // Be resilient: some builds may register the module path differently.
-  // We fetch owned objects and filter client-side for objects whose
-  // type string contains `PlayerState`.
+/* ================== HELPERS ================== */
+
+import type { SuiParsedData } from "@mysten/sui/client";
+
+function isPlayerState(obj: SuiObjectResponse): boolean {
+  const content = obj.data?.content as SuiParsedData | undefined;
+
+  if (!content || content.dataType !== "moveObject") {
+    return false;
+  }
+
+  return content.type.includes("PlayerState");
+}
+/* ================== LOAD PLAYER ================== */
+
+export async function loadPlayer(
+  address: string
+): Promise<SuiObjectResponse[]> {
   const res = await suiClient.getOwnedObjects({
     owner: address,
-    options: {
-      showContent: true,
-    },
-  })
+    options: { showContent: true },
+  });
 
-  const objs = (res.data || []).filter((o: unknown) => {
-    try {
-      type OwnedObj = { data?: { content?: { type?: string }; type?: string }; type?: string }
-      const obj = o as OwnedObj
-      const t = obj?.data?.content?.type ?? obj?.data?.type ?? obj?.type ?? ''
-      return typeof t === 'string' && t.includes('PlayerState')
-    } catch {
-      return false
-    }
-  })
-
-  return objs
+  return res.data.filter(isPlayerState);
 }
 
-/** CREATE SAVE GAME */
-export async function createPlayer(wallet: Wallet) {
-  const tx = new TransactionBlock()
+/* ================== CREATE PLAYER ================== */
 
-  // Try canonical name first, fallback to older `create` if needed.
-  const targets = [`${PACKAGE_ID}::player::create_player`, `${PACKAGE_ID}::player::create`]
+export async function createPlayer(wallet: Wallet) {
+  const targets = [
+    `${PACKAGE_ID}::player::create_player`,
+    `${PACKAGE_ID}::player::create`,
+  ];
 
   for (const target of targets) {
     try {
-      const attempt = new TransactionBlock()
-      attempt.moveCall({ target, arguments: [] })
-      return await wallet.signAndExecuteTransactionBlock({ transactionBlock: attempt })
-    } catch (err) {
-      // try next
+      const tx = new Transaction();
+      tx.moveCall({ target, arguments: [] });
+      return await wallet.signAndExecuteTransaction({ transaction: tx });
+    } catch (error) {
+      console.warn(`createPlayer failed with ${target}`, error);
     }
   }
 
-  throw new Error('createPlayer: no supported create function found on-chain')
+  throw new Error("createPlayer: no supported create function found");
 }
 
-/** UPDATE SAVE GAME */
+/* ================== UPDATE PLAYER ================== */
+
 export async function updatePlayer(
   wallet: Wallet,
   playerObjectId: string,
@@ -65,61 +74,119 @@ export async function updatePlayer(
   seed: number,
   lastUpdated: number
 ) {
-  // Try both newer and older function names
-  const targets = [`${PACKAGE_ID}::player::update_player`, `${PACKAGE_ID}::player::update`]
+  const targets = [
+    `${PACKAGE_ID}::player::update_player`,
+    `${PACKAGE_ID}::player::update`,
+  ];
 
   for (const target of targets) {
     try {
-      const attempt = new TransactionBlock()
-      attempt.moveCall({
+      const tx = new Transaction();
+
+      tx.moveCall({
         target,
         arguments: [
-          attempt.object(playerObjectId),
-          attempt.pure(level),
-          attempt.pure(gold),
-          attempt.pure(seed),
-          attempt.pure(lastUpdated),
+          tx.object(playerObjectId),
+          tx.pure.u64(level),
+          tx.pure.u64(gold),
+          tx.pure.u64(seed),
+          tx.pure.u64(lastUpdated),
         ],
-      })
-      return await wallet.signAndExecuteTransactionBlock({ transactionBlock: attempt })
-    } catch (err) {
-      // try next
+      });
+
+      return await wallet.signAndExecuteTransaction({ transaction: tx });
+    } catch (error) {
+      console.warn(`updatePlayer failed with ${target}`, error);
     }
   }
 
-  throw new Error('updatePlayer: no supported update function found on-chain')
+  throw new Error("updatePlayer: no supported update function found");
 }
-// ... (Giữ nguyên các import và code cũ của bạn ở trên) ...
 
-/** * NEW: WIN STAGE
- * Hàm này gọi khi thắng game: vừa lưu game, vừa nhận NFT Boss 
- */
+/* ================== WIN STAGE ================== */
+
 export async function winStage(
   wallet: Wallet,
   playerObjectId: string,
-  stageWon: number,   // ID của Stage vừa thắng (để chọn hình Boss)
+  stageWon: number,
   level: number,
   gold: number,
   seed: number,
   lastUpdated: number
 ) {
-  const tx = new TransactionBlock()
-
-  // Gọi vào hàm win_stage mà chúng ta vừa viết trong Smart Contract
-  // Target format: PACKAGE_ID::MODULE_NAME::FUNCTION_NAME
-  const target = `${PACKAGE_ID}::player::win_stage`
+  const tx = new Transaction();
 
   tx.moveCall({
-    target: target, 
+    target: `${PACKAGE_ID}::player::win_stage`,
     arguments: [
-      tx.object(playerObjectId), // Tham số 1: player (Object)
-      tx.pure(stageWon),         // Tham số 2: stage_won (u64)
-      tx.pure(level),            // Tham số 3: new_level (u64)
-      tx.pure(gold),             // Tham số 4: new_gold (u64)
-      tx.pure(seed),             // Tham số 5: new_seed (u64)
-      tx.pure(lastUpdated),      // Tham số 6: timestamp (u64)
+      tx.object(playerObjectId),
+      tx.pure.u64(stageWon),
+      tx.pure.u64(level),
+      tx.pure.u64(gold),
+      tx.pure.u64(seed),
+      tx.pure.u64(lastUpdated),
     ],
-  })
+  });
 
-  return await wallet.signAndExecuteTransactionBlock({ transactionBlock: tx })
+  return wallet.signAndExecuteTransaction({ transaction: tx });
+}
+
+/* ================== WIN STAGE + FETCH NFT ================== */
+
+type CreatedNFT = {
+  objectId: string;
+  objectType: string;
+};
+
+function isBossNFT(
+  change: SuiObjectChange
+): change is Extract<SuiObjectChange, { type: "created" }> {
+  return (
+    change.type === "created" &&
+    typeof change.objectType === "string" &&
+    change.objectType.includes("BossNFT")
+  );
+}
+
+export async function winStageAndFetchNFT(
+  wallet: Wallet,
+  playerObjectId: string,
+  stageWon: number,
+  level: number,
+  gold: number,
+  seed: number,
+  lastUpdated: number
+): Promise<{ digest: string; bossNFTs: CreatedNFT[] }> {
+  const res = await winStage(
+    wallet,
+    playerObjectId,
+    stageWon,
+    level,
+    gold,
+    seed,
+    lastUpdated
+  );
+
+  if (!res.digest) {
+    throw new Error("Transaction digest not found");
+  }
+
+  const tx = await suiClient.getTransactionBlock({
+    digest: res.digest,
+    options: {
+      showEffects: true,
+      showObjectChanges: true,
+    },
+  });
+
+  const bossNFTs: CreatedNFT[] =
+    tx.effects?.objectChanges?.filter(isBossNFT).map((c) => ({
+      objectId: c.objectId,
+      objectType: c.objectType,
+    })) ?? [];
+
+  return {
+    digest: res.digest,
+    bossNFTs,
+  };
 }

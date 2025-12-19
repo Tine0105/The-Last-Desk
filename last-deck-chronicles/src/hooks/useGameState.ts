@@ -1,5 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Card, Boss, Player, GameState, BattleLogEntry, BossNFT } from '@/types/game';
+import { winStageAndFetchNFT } from '@/web3/playerState';
+import { usePlayerSync } from '@/hooks/usePlayerSync';
+import { suiClient } from '@/web3/suiClient';
 import { generateStarterDeck, generateCard } from '@/data/cards';
 import { generateBoss } from '@/data/bosses';
 
@@ -24,6 +27,9 @@ export function useGameState(walletAddress: string | null) {
   });
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [pendingNFT, setPendingNFT] = useState<BossNFT | null>(null);
+
+  // Player sync hooks (used to persist NFTs on successful on-chain mint)
+  const { saveNFT } = usePlayerSync(walletAddress);
 
   // Sync wallet address changes
   useEffect(() => {
@@ -188,6 +194,66 @@ export function useGameState(walletAddress: string | null) {
     }
   }, [pendingNFT]);
 
+  // Submit the win on-chain using a wallet object that implements
+  // `signAndExecuteTransactionBlock`. Caller must provide the wallet and
+  // the on-chain `playerObjectId` (PlayerState object id owned by the player).
+  const submitWinOnChain = useCallback(async (wallet: any, playerObjectId: string) => {
+    if (!gameState.currentStage) return null;
+    try {
+      const stage = gameState.currentStage;
+      const level = player.level;
+      const gold = player.coins;
+      const seed = player.seed ?? 0;
+      const lastUpdated = Date.now();
+
+      const result = await winStageAndFetchNFT(wallet, playerObjectId, stage, level, gold, seed, lastUpdated);
+      const created = result?.created ?? [];
+      if (created.length === 0) return result;
+
+      const nftId = created[0].objectId;
+      // Fetch object content to extract metadata if possible
+      try {
+        const objRes: any = await suiClient.getObject({ id: nftId, options: { showContent: true } });
+        const content = objRes?.data?.content ?? objRes?.data ?? objRes;
+        // Attempt to extract fields safely
+        const fields = content?.data?.fields ?? content?.fields ?? content?.content?.fields ?? {};
+        const name = fields?.name ?? '';
+        const image_url = fields?.image_url ?? fields?.imageUrl ?? fields?.image ?? '';
+        const stageField = fields?.stage ?? fields?.stage_defeated ?? stage;
+
+        const bossNFT: BossNFT = {
+          id: nftId,
+          boss: {
+            id: `boss-${stageField}`,
+            name: typeof name === 'string' ? name : '',
+            image: typeof image_url === 'string' ? image_url : '',
+            rarity: 'common',
+            hp: 0,
+            maxHp: 0,
+            atk: 0,
+            def: 0,
+            stage: Number(stageField) || stage,
+          },
+          mintedAt: Date.now(),
+          runScore: gameState.runScore,
+          stageDefeated: Number(stageField) || stage,
+        };
+
+        // persist via sync hook if available
+        try { await saveNFT(bossNFT); } catch (_) {}
+        setPlayer(prev => ({ ...prev, bossNFTs: [...prev.bossNFTs, bossNFT] }));
+        setPendingNFT(null);
+      } catch (err) {
+        return result;
+      }
+
+      return result;
+    } catch (err) {
+      console.error('submitWinOnChain error', err);
+      throw err;
+    }
+  }, [gameState, player, saveNFT]);
+
   const nextStage = useCallback(() => {
     // Claim NFT if pending
     claimNFT();
@@ -276,5 +342,9 @@ export function useGameState(walletAddress: string | null) {
     removeCardFromDeck,
     claimNFT,
     removeNFT,
+    // Expose helper for callers to submit the win on-chain. Caller must provide a
+    // wallet object implementing `signAndExecuteTransactionBlock` and the
+    // on-chain `PlayerState` object id.
+    submitWinOnChain,
   };
 }
