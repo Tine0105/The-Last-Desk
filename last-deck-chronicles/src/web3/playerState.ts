@@ -179,8 +179,32 @@ export async function winStageAndFetchNFT(
     },
   });
 
+  // `objectChanges` can appear in different shapes depending on SDK version.
+  // Normalize at runtime without using `any` to satisfy ESLint.
+  const asRecord = tx as unknown as Record<string, unknown>;
+
+  let rawObjectChanges: SuiObjectChange[] | undefined;
+
+  // Try effects.objectChanges
+  const effectsVal = asRecord["effects"];
+  if (effectsVal && typeof effectsVal === "object") {
+    const effRec = effectsVal as Record<string, unknown>;
+    const oc = effRec["objectChanges"];
+    if (Array.isArray(oc)) {
+      rawObjectChanges = oc as SuiObjectChange[];
+    }
+  }
+
+  // Fallback to top-level objectChanges
+  if (!rawObjectChanges) {
+    const topOc = asRecord["objectChanges"];
+    if (Array.isArray(topOc)) {
+      rawObjectChanges = topOc as SuiObjectChange[];
+    }
+  }
+
   const bossNFTs: CreatedNFT[] =
-    tx.effects?.objectChanges?.filter(isBossNFT).map((c) => ({
+    rawObjectChanges?.filter(isBossNFT).map((c) => ({
       objectId: c.objectId,
       objectType: c.objectType,
     })) ?? [];
