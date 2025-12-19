@@ -89,3 +89,37 @@ export async function updatePlayer(
 
   throw new Error('updatePlayer: no supported update function found on-chain')
 }
+// ... (Giữ nguyên các import và code cũ của bạn ở trên) ...
+
+/** * NEW: WIN STAGE
+ * Hàm này gọi khi thắng game: vừa lưu game, vừa nhận NFT Boss 
+ */
+export async function winStage(
+  wallet: Wallet,
+  playerObjectId: string,
+  stageWon: number,   // ID của Stage vừa thắng (để chọn hình Boss)
+  level: number,
+  gold: number,
+  seed: number,
+  lastUpdated: number
+) {
+  const tx = new TransactionBlock()
+
+  // Gọi vào hàm win_stage mà chúng ta vừa viết trong Smart Contract
+  // Target format: PACKAGE_ID::MODULE_NAME::FUNCTION_NAME
+  const target = `${PACKAGE_ID}::player::win_stage`
+
+  tx.moveCall({
+    target: target, 
+    arguments: [
+      tx.object(playerObjectId), // Tham số 1: player (Object)
+      tx.pure(stageWon),         // Tham số 2: stage_won (u64)
+      tx.pure(level),            // Tham số 3: new_level (u64)
+      tx.pure(gold),             // Tham số 4: new_gold (u64)
+      tx.pure(seed),             // Tham số 5: new_seed (u64)
+      tx.pure(lastUpdated),      // Tham số 6: timestamp (u64)
+    ],
+  })
+
+  return await wallet.signAndExecuteTransactionBlock({ transactionBlock: tx })
+}
