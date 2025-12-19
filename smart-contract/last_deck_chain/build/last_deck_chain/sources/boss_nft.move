@@ -5,53 +5,94 @@ module last_desk::boss_nft {
     use sui::tx_context::{Self, TxContext};
     use std::string::{Self, String};
     use sui::url::{Self, Url};
+    use sui::display;
+    use sui::package::Publisher;
+
 
     // Struct NFT Boss
     public struct BossNFT has key, store {
         id: UID,
         name: String,
         stage: u64,
-        image_url: Url,
+        image_url: String,
         description: String,
     }
 
     // Hàm lấy metadata (Đã tích hợp link Pinata của bạn)
-    fun get_boss_metadata(stage: u64): (String, vector<u8>) {
+    fun get_boss_metadata(stage: u64): (String, String) {
         if (stage == 1) {
-            (string::utf8(b"Crimson Nightmare"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-crimson-nightmare.png")
+            (
+                string::utf8(b"Crimson Nightmare"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-crimson-nightmare.png")
+            )
         } else if (stage == 2) {
-            (string::utf8(b"Eternal Void"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-eternal-void.png")
+            (
+                string::utf8(b"Eternal Void"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-eternal-void.png")
+            )
         } else if (stage == 3) {
-            (string::utf8(b"Forgotten King"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-forgotten-king.png")
+            (
+                string::utf8(b"Forgotten King"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-forgotten-king.png")
+            )
         } else if (stage == 4) {
-            (string::utf8(b"Memory Wraith"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-memory-wraith.png")
+            (
+                string::utf8(b"Memory Wraith"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-memory-wraith.png")
+            )
         } else if (stage == 5) {
-            (string::utf8(b"Oblivion Lord"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-oblivion-lord.png")
+            (
+                string::utf8(b"Oblivion Lord"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-oblivion-lord.png")
+            )
         } else if (stage == 6) {
-            (string::utf8(b"Shadow Fragment"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-shadow-fragment.png")
+            (
+                string::utf8(b"Shadow Fragment"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-shadow-fragment.png")
+            )
         } else if (stage == 7) {
-            (string::utf8(b"Time Devourer"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-time-devourer.png")
+            (
+                string::utf8(b"Time Devourer"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-time-devourer.png")
+            )
         } else if (stage == 8) {
-            (string::utf8(b"Void Sentinel"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-void-sentinel.png")
+            (
+                string::utf8(b"Void Sentinel"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-void-sentinel.png")
+            )
         } else {
-            (string::utf8(b"Unknown Boss"), b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-crimson-nightmare.png")
+            (
+                string::utf8(b"Unknown Boss"),
+                string::utf8(b"https://jade-labour-goat-295.mypinata.cloud/ipfs/bafybeibgjtoxafvr4nmuaz7rwkflo5fejhxw6ekxzz2tsgka35hjjite3m/boss-crimson-nightmare.png")
+            )
         }
+    }
+
+
+    public entry fun init_display(pub: &Publisher, ctx: &mut TxContext){
+         let mut disp = display::new<BossNFT>(pub, ctx);
+
+        display::add(&mut disp, string::utf8(b"name"), string::utf8(b"{name}"));
+        display::add(&mut disp, string::utf8(b"image_url"), string::utf8(b"{image_url}"));
+        display::add(&mut disp, string::utf8(b"description"), string::utf8(b"{description}"));
+        // consume the Display value so it isn't left unused (Display lacks `drop`)
+        transfer::public_transfer(disp, tx_context::sender(ctx));
     }
 
     // Hàm mint NFT
     // public để module khác trong cùng package (hoặc ngoài) có thể gọi
     public fun mint_reward(stage: u64, ctx: &mut TxContext) {
         let sender = tx_context::sender(ctx);
-        let (boss_name, url_bytes) = get_boss_metadata(stage);
+        let (boss_name, image_url) = get_boss_metadata(stage);
 
         let nft = BossNFT {
             id: object::new(ctx),
             name: boss_name,
             stage: stage,
-            image_url: url::new_unsafe_from_bytes(url_bytes),
+            image_url,
             description: string::utf8(b"Reward for defeating the stage boss."),
         };
-
+        // transfer NFT
         transfer::public_transfer(nft, sender);
     }
 }

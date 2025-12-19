@@ -4,7 +4,7 @@ import { suiClient } from './suiClient'
 type TransactionBlockInstance = InstanceType<typeof TransactionBlock>
 
 // TODO: set PACKAGE_ID after publishing the Move package (replace 0x...)
-export const PACKAGE_ID = '0xf78bc8d7f26b4afc7b4d660430b2ade7eb0cff6d2db2f1ef67efd4505d434868'
+export const PACKAGE_ID = '0x9b4f72b690a7829e2febb7ffb00e2f588a25351f13da14bf7a78c21a9be0c48e'
 
 type Wallet = {
   signAndExecuteTransactionBlock: (opts: { transactionBlock: TransactionBlockInstance }) => Promise<unknown>
