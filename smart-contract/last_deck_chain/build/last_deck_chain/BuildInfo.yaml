@@ -3,19 +3,19 @@ compiled_package_info:
   package_name: last_deck_chain
   address_alias_instantiation:
     bridge: 000000000000000000000000000000000000000000000000000000000000000b
-    last_deck: "0000000000000000000000000000000000000000000000000000000000000000"
+    last_desk: "0000000000000000000000000000000000000000000000000000000000000000"
     std: "0000000000000000000000000000000000000000000000000000000000000001"
     sui: "0000000000000000000000000000000000000000000000000000000000000002"
     sui_system: "0000000000000000000000000000000000000000000000000000000000000003"
-  source_digest: 9AE044369CA5E9967B1ABF43B72A57A74D84BC90765E5B04680E9CB72B1E8A44
+  source_digest: 13CCC195A90DF1F401A3B7EC3BF3A643D37A71E1C15C02EFA335B16E60A55BD4
   build_flags:
-    dev_mode: false
-    test_mode: false
+    dev_mode: true
+    test_mode: true
     generate_docs: false
     save_disassembly: false
     install_dir: ~
     force_recompilation: false
-    lock_file: ".\\Move.lock"
+    lock_file: ~
     fetch_deps_only: false
     skip_fetch_latest_git_deps: false
     default_flavor: sui
