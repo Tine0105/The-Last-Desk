@@ -1,7 +1,3 @@
-Ok, mình dịch **đầy đủ sang tiếng Việt**, giữ đúng nội dung kỹ thuật **nhưng pha thêm chút dễ thương – thân thiện – đúng vibe game**, và **chừa sẵn chỗ cho 5 tác giả** để bạn điền sau 👀✨
-
----
-
 # 📜 **Last Deck Chronicles**
 
 ✨ **Bước vào một cuộc phiêu lưu hoành tráng trong Last Deck Chronicles!** ✨
@@ -158,11 +154,11 @@ Dự án sử dụng **MIT License**.
 
 Dự án được thực hiện bởi nhóm **5 thành viên**:
 
-* 👤 **Author 1:** ……………………………
-* 👤 **Author 2:** ……………………………
-* 👤 **Author 3:** ……………………………
-* 👤 **Author 4:** ……………………………
-* 👤 **Author 5:** ……………………………
+* 👤 **Author 1:** Lê Phan Minh Hải
+* 👤 **Author 2:** Nguyễn Tiến Phúc
+* 👤 **Author 3:** Đặng Đức An
+* 👤 **Author 4:** Nguyễn Đăng Quang
+* 👤 **Author 5:** Nguyễn Minh Tiến
 
 ---
 
