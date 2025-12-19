@@ -7,6 +7,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Wallet, LogOut, CheckCircle, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 
 interface SuiWalletConnectProps {
   onConnectionChange?: (address: string | null) => void;
@@ -27,28 +34,38 @@ export function SuiWalletConnect({ onConnectionChange }: SuiWalletConnectProps) 
   if (currentAccount) {
     return (
       <div className="flex items-center gap-3">
-        <div className="glass-panel rounded-lg px-4 py-2 flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-neon-green" />
-          <span className="font-mono text-sm">
-            {currentAccount.address.slice(0, 8)}...{currentAccount.address.slice(-6)}
-          </span>
-          <a
-            href={`https://suiscan.xyz/testnet/account/${currentAccount.address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-1 text-muted-foreground hover:text-primary transition-colors"
-          >
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => disconnect()}
-          className="border-destructive/50 text-destructive hover:bg-destructive/10"
-        >
-          <LogOut className="w-4 h-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button aria-label="Account menu">
+              <Avatar>
+                <AvatarFallback>
+                  {currentAccount.address.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent>
+            <DropdownMenuItem asChild>
+              <div className="w-full">
+                <ConnectButton
+                  connectText={<span className="flex items-center gap-2"><Wallet className="w-4 h-4" />Change wallet</span>}
+                  className={cn(
+                    'w-full text-left px-2 py-1 !bg-transparent !p-0',
+                    'font-medium',
+                  )}
+                />
+              </div>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onSelect={() => disconnect()}>
+              <div className="flex items-center gap-2">
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     );
   }

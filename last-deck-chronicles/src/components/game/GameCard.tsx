@@ -1,5 +1,6 @@
 import { Card } from '@/types/game';
 import { cn } from '@/lib/utils';
+import { getCardImage } from '@/lib/cardImages';
 import { Sword, Shield, Heart, Zap } from 'lucide-react';
 
 interface GameCardProps {
@@ -79,15 +80,31 @@ export function GameCard({ card, selected, onClick, size = 'md', disabled }: Gam
         'relative bg-gradient-to-b from-muted/50 to-transparent flex items-center justify-center',
         size === 'sm' ? 'h-12' : size === 'md' ? 'h-16' : 'h-24'
       )}>
-        <div className={cn(
-          'rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center',
-          size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-12 h-12' : 'w-16 h-16'
-        )}>
-          <Sword className={cn(
-            'text-primary',
-            size === 'sm' ? 'w-4 h-4' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'
-          )} />
-        </div>
+        {(() => {
+          const img = getCardImage(card.name);
+          if (img) {
+            return (
+              <div className={cn(
+                'rounded-md overflow-hidden flex items-center justify-center',
+                size === 'sm' ? 'w-16 h-12' : size === 'md' ? 'w-24 h-16' : 'w-32 h-20'
+              )}>
+                <img src={img} alt={card.name} className="object-cover w-full h-full" />
+              </div>
+            );
+          }
+
+          return (
+            <div className={cn(
+              'rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center',
+              size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-12 h-12' : 'w-16 h-16'
+            )}>
+              <Sword className={cn(
+                'text-primary',
+                size === 'sm' ? 'w-4 h-4' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'
+              )} />
+            </div>
+          );
+        })()}
       </div>
 
       {/* Stats */}

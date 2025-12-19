@@ -1,5 +1,5 @@
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary' | 'secret';
-export type CardType = 'attack' | 'skill' | 'curse' | 'relic';
+export type Rarity = "common" | "uncommon" | "rare" | "legendary" | "secret";
+export type CardType = "attack" | "skill" | "curse" | "relic";
 
 export interface Card {
   id: string;
@@ -44,10 +44,12 @@ export interface Player {
   bestScore: number;
   maxStage: number;
   bossNFTs: BossNFT[];
+  level: number;
+  seed: number;
 }
 
 export interface GameState {
-  phase: 'menu' | 'battle' | 'victory' | 'defeat' | 'lootbox' | 'mining';
+  phase: "menu" | "battle" | "victory" | "defeat" | "lootbox" | "mining";
   currentStage: number;
   currentBoss: Boss | null;
   selectedCards: Card[];
@@ -56,7 +58,7 @@ export interface GameState {
 }
 
 export interface BattleLogEntry {
-  type: 'attack' | 'crit' | 'damage' | 'block' | 'victory' | 'defeat';
+  type: "attack" | "crit" | "damage" | "block" | "victory" | "defeat";
   message: string;
   value?: number;
 }

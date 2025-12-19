@@ -42,6 +42,11 @@ const Index = () => {
   const [showLootbox, setShowLootbox] = useState(false);
   const [showBuyCoins, setShowBuyCoins] = useState(false);
 
+  // When not connected, show only the first background (minimal DOM)
+  if (!walletAddress) {
+    return <div className="min-h-screen" />;
+  }
+
   const handleStartRun = () => {
     const success = startRun();
     if (success) {

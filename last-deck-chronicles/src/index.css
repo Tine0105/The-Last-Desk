@@ -82,14 +82,37 @@
 
   body {
     @apply bg-background text-foreground font-rajdhani;
-    background-image: 
+    /* Default (first) background shown before wallet connect */
+    background-image:
+      url('./assets/firstbackground.png'),
       radial-gradient(ellipse at 20% 30%, hsl(var(--neon-purple) / 0.08) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 70%, hsl(var(--neon-cyan) / 0.06) 0%, transparent 50%),
       radial-gradient(ellipse at 50% 50%, hsl(var(--neon-pink) / 0.04) 0%, transparent 70%);
+    background-size: cover, cover, cover, cover;
+    background-position: center, 20% 30%, 80% 70%, 50% 50%;
+    background-repeat: no-repeat;
     background-attachment: fixed;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  /* Apply when a wallet is connected */
+  .loggedin-bg {
+    background-image:
+      url('./assets/background.jpg'),
+      radial-gradient(ellipse at 20% 30%, hsl(var(--neon-purple) / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, hsl(var(--neon-cyan) / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, hsl(var(--neon-pink) / 0.04) 0%, transparent 70%);
+    background-size: cover, cover, cover, cover;
+    background-position: center, 20% 30%, 80% 70%, 50% 50%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-orbitron;
   }
 }
@@ -162,20 +185,42 @@
   }
 
   @keyframes legendary-pulse {
-    0%, 100% { box-shadow: 0 0 25px hsl(var(--rarity-legendary) / 0.6); }
-    50% { box-shadow: 0 0 40px hsl(var(--rarity-legendary) / 0.9); }
+
+    0%,
+    100% {
+      box-shadow: 0 0 25px hsl(var(--rarity-legendary) / 0.6);
+    }
+
+    50% {
+      box-shadow: 0 0 40px hsl(var(--rarity-legendary) / 0.9);
+    }
   }
 
   @keyframes secret-rainbow {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
+    0% {
+      filter: hue-rotate(0deg);
+    }
+
+    100% {
+      filter: hue-rotate(360deg);
+    }
   }
 
   /* Attack animation */
   @keyframes attack-shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    25% {
+      transform: translateX(-5px);
+    }
+
+    75% {
+      transform: translateX(5px);
+    }
   }
 
   .attack-animation {
@@ -184,8 +229,16 @@
 
   /* Damage flash */
   @keyframes damage-flash {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; filter: brightness(2); }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.3;
+      filter: brightness(2);
+    }
   }
 
   .damage-animation {
@@ -194,9 +247,20 @@
 
   /* Crit animation */
   @keyframes crit-burst {
-    0% { transform: scale(1); filter: brightness(1); }
-    50% { transform: scale(1.1); filter: brightness(1.5) saturate(1.5); }
-    100% { transform: scale(1); filter: brightness(1); }
+    0% {
+      transform: scale(1);
+      filter: brightness(1);
+    }
+
+    50% {
+      transform: scale(1.1);
+      filter: brightness(1.5) saturate(1.5);
+    }
+
+    100% {
+      transform: scale(1);
+      filter: brightness(1);
+    }
   }
 
   .crit-animation {
@@ -205,8 +269,13 @@
 
   /* Card flip */
   @keyframes card-flip {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(180deg); }
+    0% {
+      transform: rotateY(0deg);
+    }
+
+    100% {
+      transform: rotateY(180deg);
+    }
   }
 
   .card-flip {
@@ -215,8 +284,15 @@
 
   /* Float animation for cards */
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
   }
 
   .float-animation {
@@ -225,8 +301,15 @@
 
   /* Pulse glow */
   @keyframes pulse-glow {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
+
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+
+    50% {
+      opacity: 1;
+    }
   }
 
   .pulse-glow {
@@ -238,13 +321,11 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      hsl(var(--neon-cyan) / 0.03) 2px,
-      hsl(var(--neon-cyan) / 0.03) 4px
-    );
+    background: repeating-linear-gradient(0deg,
+        transparent,
+        transparent 2px,
+        hsl(var(--neon-cyan) / 0.03) 2px,
+        hsl(var(--neon-cyan) / 0.03) 4px);
     pointer-events: none;
   }
 }
